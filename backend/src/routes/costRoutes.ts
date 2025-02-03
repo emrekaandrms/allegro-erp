@@ -1,14 +1,17 @@
-import { Router } from 'express';
+import express from 'express';
 import { CostController } from '../controller/CostController';
-import { authMiddleware } from '../middleware/authMiddleware';
 import { roleMiddleware } from '../middleware/roleMiddleware';
+import { authMiddleware } from '../middleware/authMiddleware';
 
-const router = Router();
+const router = express.Router();
+
+// Auth middleware'ini ekle
 router.use(authMiddleware);
 
-router.get('/priceNeeded', roleMiddleware(['muhasebe','admin']), CostController.listPriceNeeded);
-router.post('/setPrice', roleMiddleware(['muhasebe','admin']), CostController.setProductPrice);
-router.get('/all', roleMiddleware(['muhasebe','admin']), CostController.listAll);
+// Fiyatlama işlemleri için route'lar
+router.post('/create', roleMiddleware(['muhasebe','admin']), CostController.createCost);
+router.get('/list', roleMiddleware(['muhasebe','admin']), CostController.listCosts);
 router.get('/export', roleMiddleware(['muhasebe','admin']), CostController.exportCostsCSV);
+router.put('/update/:productId', roleMiddleware(['muhasebe','admin']), CostController.updateCost);
 
 export default router;

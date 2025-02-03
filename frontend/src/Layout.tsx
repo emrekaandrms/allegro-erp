@@ -1,6 +1,6 @@
 // frontend/src/Layout.tsx
-import React from 'react';
-import { useAuth } from './hooks/useAuth';
+import React, { useState } from 'react';
+import { Container } from '@mui/material';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
@@ -9,14 +9,15 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { role } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <div style={{ display: 'flex' }}>
-      {role === 'admin' && <Sidebar />}
-      <div style={{ flex: 1, padding: '20px' }}>
-        <Header />
+    <div>
+      <Header isMenuOpen={isMenuOpen} onMenuClick={() => setIsMenuOpen(!isMenuOpen)} />
+      <Sidebar open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
         {children}
-      </div>
+      </Container>
     </div>
   );
 }

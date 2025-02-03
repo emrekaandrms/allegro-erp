@@ -1,30 +1,32 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Product } from './Product';
-
-type Platforms = 'shopify' | 'etsy' | 'trendyol' | 'amazon' | 'hepsiburada';
 
 @Entity()
 export class SEOInfo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Product)
-  product: Product;
-
-  @Column({ type: 'enum', enum: ['shopify','etsy','trendyol','amazon','hepsiburada'] })
-  platform: Platforms;
+  @Column({
+    type: 'enum',
+    enum: ['shopify', 'etsy', 'amazon', 'hepsiburada', 'trendyol']
+  })
+  platform: string;
 
   @Column()
   title: string;
 
-  @Column({nullable: true})
+  @Column('text')
   description: string;
 
-  @Column({nullable: true})
+  @Column()
   meta_title: string;
 
-  @Column({nullable: true})
+  @Column('text')
   meta_description: string;
+
+  @ManyToOne(() => Product, product => product.seo_infos)
+  @JoinColumn({ name: "product_id" })
+  product: Product;
 
   @CreateDateColumn()
   created_at: Date;

@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "scripts": {
-  "start": "ts-node src/server.ts",
-  "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d ./src/config/database.ts"
-}
-,
+    "start": "ts-node src/server.ts",
+    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d ./src/config/database.ts",
+    "typeorm": "typeorm-ts-node-commonjs"
+  },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",

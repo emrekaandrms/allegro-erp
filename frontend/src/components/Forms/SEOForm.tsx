@@ -1,38 +1,132 @@
-import React, {useState} from 'react';
-import {TextField, Button, Box} from '@mui/material';
-import { setSEO } from '../../services/seoService';
+import React, { useState } from 'react';
+import { TextField, Button, Box, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
+import { createSEOInfo } from '../../services/seoService';
 import { useAuth } from '../../hooks/useAuth';
 
-export function SEOForm({productId,onCompleted}:{productId:number,onCompleted:()=>void}) {
-  const {token} = useAuth();
-  const platforms = ['shopify','etsy','trendyol','amazon','hepsiburada'];
-  const [seoData, setSeoData] = useState(platforms.map(p=>({platform:p, title:'', description:'', meta_title:'', meta_description:''})));
+interface Props {
+  productId: number;
+  onSEOAdded: () => void;
+}
 
-  const handleChange = (i:number, field:string, value:string) => {
-    const copy = [...seoData];
-    (copy[i] as any)[field] = value;
-    setSeoData(copy);
-  }
+export function SEOForm({ productId, onSEOAdded }: Props) {
+  const { token } = useAuth();
+  const [formData, setFormData] = useState({
+    platform: '',
+    title: '',
+    description: '',
+    metaTitle: '',
+    metaDescription: ''
+  });
 
-  const handleSave = async (e:React.FormEvent) => {
+  const handleTextChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
+  };
+
+  const handleSelectChange = (event: SelectChangeEvent) => {
+    setFormData(prev => ({
+      ...prev,
+      platform: event.target.value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if(!token) return;
-    await setSEO(token, productId, seoData);
-    onCompleted();
-  }
+    if (!token) return;
+
+    try {
+      await createSEOInfo(token, {
+        product_id: productId,
+        platform: formData.platform,
+        title: formData.title,
+        description: formData.description,
+        meta_title: formData.metaTitle,
+        meta_description: formData.metaDescription
+      });
+      onSEOAdded();
+      setFormData({
+        platform: '',
+        title: '',
+        description: '',
+        metaTitle: '',
+        metaDescription: ''
+      });
+    } catch (error) {
+      console.error('SEO bilgisi kaydedilirken hata oluştu:', error);
+      alert('SEO bilgisi kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+  };
 
   return (
-    <Box component="form" onSubmit={handleSave} sx={{display:'flex', flexDirection:'column', gap:2}}>
-      {seoData.map((item,i)=>(
-        <Box key={i} sx={{border:'1px solid #ccc', padding:2}}>
-          <h4>{item.platform.toUpperCase()}</h4>
-          <TextField label="Title" value={item.title} onChange={e=>handleChange(i,'title',e.target.value)} fullWidth/>
-          <TextField label="Description" value={item.description} onChange={e=>handleChange(i,'description',e.target.value)} fullWidth/>
-          <TextField label="Meta Title" value={item.meta_title} onChange={e=>handleChange(i,'meta_title',e.target.value)} fullWidth/>
-          <TextField label="Meta Description" value={item.meta_description} onChange={e=>handleChange(i,'meta_description',e.target.value)} fullWidth/>
-        </Box>
-      ))}
-      <Button type="submit" variant="contained">Kaydet</Button>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        width: '100%',
+        maxWidth: '500px',
+        mx: 'auto',
+        my: 2
+      }}
+    >
+      <FormControl required>
+        <InputLabel>Platform</InputLabel>
+        <Select
+          value={formData.platform}
+          label="Platform"
+          onChange={handleSelectChange}
+        >
+          <MenuItem value="shopify">Shopify</MenuItem>
+          <MenuItem value="etsy">Etsy</MenuItem>
+          <MenuItem value="amazon">Amazon</MenuItem>
+          <MenuItem value="hepsiburada">Hepsiburada</MenuItem>
+          <MenuItem value="trendyol">Trendyol</MenuItem>
+        </Select>
+      </FormControl>
+
+      <TextField
+        label="Başlık"
+        value={formData.title}
+        onChange={handleTextChange('title')}
+        required
+        multiline
+        rows={2}
+      />
+
+      <TextField
+        label="Açıklama"
+        value={formData.description}
+        onChange={handleTextChange('description')}
+        required
+        multiline
+        rows={4}
+      />
+
+      <TextField
+        label="Meta Başlık"
+        value={formData.metaTitle}
+        onChange={handleTextChange('metaTitle')}
+        required
+        multiline
+        rows={2}
+      />
+
+      <TextField
+        label="Meta Açıklama"
+        value={formData.metaDescription}
+        onChange={handleTextChange('metaDescription')}
+        required
+        multiline
+        rows={4}
+      />
+
+      <Button type="submit" variant="contained" color="primary">
+        SEO Bilgilerini Kaydet
+      </Button>
     </Box>
-  )
+  );
 }
